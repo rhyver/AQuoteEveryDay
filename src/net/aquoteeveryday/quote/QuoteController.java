@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import net.aquoteeveryday.Main;
 import net.aquoteeveryday.author.Author;
 import net.aquoteeveryday.author.AuthorController;
 import android.content.Context;
@@ -43,6 +44,8 @@ public class QuoteController {
 			e.printStackTrace();
 		}
         
+		cursor.close();
+		
 		return date;
 	}
 	
@@ -52,6 +55,7 @@ public class QuoteController {
             quoteCursor = mDb.getQuote(date);
          
             if (quoteCursor == null) {
+            	Log.i(Main.TAG, "Can't find the Quote on the DB.");
             	return null;
             }
             
@@ -69,7 +73,6 @@ public class QuoteController {
                 				  		author,
                 				  		language,
                 				  		date);
-                
                 return quote;
 			} catch (Exception e) {
 				Log.e("AQuoteEveryDay", "Get Author: " + e.toString());
@@ -90,30 +93,41 @@ public class QuoteController {
         cursor = mDb.getQuote(quote.getDate());
         
         if (cursor == null) {
-	        Long id = mDb.storeQuote(quote);
-	        
-	        if (id > 0) {
-	        	Log.i("AQuoteEveryDay", "The quote " + id.toString() + " is stored");
-	        } else {
-	        	Log.i("AQuoteEveryDay", "Can't store the quote");
-	        }
+
+        	try {
+        		Long id = mDb.storeQuote(quote);
+        		Log.i(Main.TAG,"Store Quote: " + id.toString());
+			} catch (Exception e) {
+				Log.e(Main.TAG, "Exeption by storing the quote on the DB: " + e.toString());
+			}
 	        
 	        Author author = quote.getAutor();
-	        AuthorController authorController = new AuthorController(mContext);
 	        
-	        authorController.storeAuthor(author);
-	        
+	        // If the author is not set. 
+	        if (author == null) {
+	        	Log.e(Main.TAG, "Author is not set");
+	        } else {
+	        	try {
+	        		AuthorController authorController = new AuthorController(mContext);
+	        		authorController.storeAuthor(author);
+				} catch (Exception e) {
+					Log.e(Main.TAG, "Exeption by storing the author: " + e.toString());
+				}
+	        }
         } else {
         	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         	
         	Log.i("AQuoteEveryDay", "The quote for " + dateFormat.format(quote.getDate()) + " already exist.");
         }
-        
 	}
 	
 	public void deleteTable() {
 		mDb.deleteTable();
 		
 		Log.i("AQuoteEveryDay", "Delete the Quote table.");
+	}
+	
+	public void close() {
+		mDb.close();
 	}
 }

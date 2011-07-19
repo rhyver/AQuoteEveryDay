@@ -32,6 +32,8 @@ public class AuthorController {
 	        author = new Author(id, name, wikipedia);
         }
         
+        cursor.close();
+        
 		return author;
 		
 	}
@@ -58,5 +60,9 @@ public class AuthorController {
         } else {
         	Log.i("AQuoteEveryDay", "The author " + author.getName() + " already exist.");
         }
+	}
+	
+	public void close() {
+		mDb.close();
 	}
 }

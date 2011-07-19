@@ -50,14 +50,21 @@ public class RestClient extends Service {
 			try {
 				Date date = quoteController.getNewestDate();
 
+				if (date == null) {
+					Log.i(Main.TAG, "No newest date is set.");
+				} else {
+					Log.i(Main.TAG, "Newest date is: " + date.toString());
+				}
+					
 				fetchQuote(date);
 				
 				returnValue = true;
 			} catch (Exception e) {
 				returnValue = false;
-				Log.e(Main.TAG, "Extention for getNewerQuotes: " + e.toString());
+				Log.e(Main.TAG, "Extention for getNewestQuotes: " + e.toString());
 			}
 			
+			quoteController.close();
 			Log.i(Main.TAG, "End of Service");
 		}
 		
@@ -176,7 +183,13 @@ public class RestClient extends Service {
 					
 					QuoteController quoteController = new QuoteController(getApplicationContext());
 					
-					quoteController.storeQuote(quote);
+					try {
+						quoteController.storeQuote(quote);
+					} catch (Exception exception) {
+						Log.e(Main.TAG, "Exeption by storing the quote an author: " + exception.toString());
+					}
+					
+					quoteController.close();
 				}
 			}
 		} catch(Exception exception) {

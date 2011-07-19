@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="share">Share this Quote</string>
-    <string name="app_name">A Quote Every Day</string>
+    <string name="notification">Notification Setting</string>
+    <string name="app_name">Quote</string>
 </resources>

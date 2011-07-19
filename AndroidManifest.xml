@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="net.aquoteeveryday"
       android:versionCode="1"
-      android:versionName="1.0">
+      android:versionName="1.0"
+      android:installLocation="auto">
       
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.VIBRATE" />
 
     <application android:icon="@drawable/icon" android:label="@string/app_name">
         <activity android:name="Main"
@@ -17,5 +19,6 @@
             </intent-filter>
         </activity>
 		<service android:name="RestClient"></service>
+		<receiver  android:process=":remote" android:name="QuoteNotification"></receiver>
     </application>
 </manifest>
