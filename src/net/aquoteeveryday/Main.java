@@ -1,8 +1,6 @@
 package net.aquoteeveryday;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import net.aquoteeveryday.RestClient.RestBinder;
 import net.aquoteeveryday.author.Author;
@@ -28,14 +26,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Main extends Activity {
 	
 	private static final String PREFS_NAME = "AQuoteEveryDay";
 	private static final String PREFS_NOTIFICATION_DIALOG = "NotificationDialog";
-	private static final int NOTIFICATION_INTENT = 45;
-	public static String TAG = "AQuoteEveryDay";
-	private static String NO_QUOTE = "No Quote :(";
+	public static final int NOTIFICATION_INTENT = 45;
+	public static final String TAG = "AQuoteEveryDay";
 	private TextView mQuoteView;
 	private TextView mAuthorView;
 	private Boolean mQuoteFound = false;
@@ -50,7 +48,7 @@ public class Main extends Activity {
         super.onCreate(savedInstanceState);
         Log.i("AQuoteEveryDay", "Create Main");
         
-        mProgressDialog = ProgressDialog.show(this, "", "Loading. Please wait...", true);
+        mProgressDialog = ProgressDialog.show(this, "", getString(R.string.download), true);
         
         bindRestClientService();
 		createView();
@@ -126,7 +124,7 @@ public class Main extends Activity {
         	Log.i(Main.TAG, "Can't find a quote for date: " + new Date().toString());
         	
         	if (mSyncFinished) {
-        		setQuoteView(NO_QUOTE);
+        		setQuoteView(getString(R.string.noQuote));
         	}
         } else {
         	mQuoteFound = true;
@@ -159,7 +157,7 @@ public class Main extends Activity {
 		shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, quote.getText());
 		shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, quote.getText() + " - " + quote.getAutor().getName());
  
-		startActivity(Intent.createChooser(shareIntent, "Share this Quote"));
+		startActivity(Intent.createChooser(shareIntent, getString(R.string.share)));
     }
     
     private void bindRestClientService() {
@@ -219,7 +217,7 @@ public class Main extends Activity {
 				if (result) {
 					getQuote();
 				} else {
-					setQuoteView(NO_QUOTE);
+					setQuoteView(getString(R.string.noQuote));
 				}
 			}
 		}
@@ -231,24 +229,8 @@ public class Main extends Activity {
 	}
 	
 	private void createNotificationAlarm() {
-		Calendar cur_cal = new GregorianCalendar();
-		cur_cal.setTimeInMillis(System.currentTimeMillis());//set the current time and date for this calendar
-
-		Calendar cal = new GregorianCalendar();
-		cal.add(Calendar.DAY_OF_YEAR, cur_cal.get(Calendar.DAY_OF_YEAR));
-		cal.set(Calendar.HOUR_OF_DAY, 7);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, cur_cal.get(Calendar.SECOND));
-		cal.set(Calendar.MILLISECOND, cur_cal.get(Calendar.MILLISECOND));
-		cal.set(Calendar.DATE, cur_cal.get(Calendar.DATE));
-		cal.set(Calendar.MONTH, cur_cal.get(Calendar.MONTH));
-		
-		Intent intent = new Intent(this, QuoteNotification.class);
-		PendingIntent sender = PendingIntent.getBroadcast(this, NOTIFICATION_INTENT, intent, 0);
-		AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-		alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 1000*60*60*24, sender);
-		
-		Log.i(Main.TAG, "Set the notification alarm to " + cal.getTimeInMillis());
+		Intent alarmSetter = new Intent(this, AlarmSetter.class);
+		sendBroadcast(alarmSetter);
 	}
 	
 	private void cancelNotificationAlarm() {
@@ -256,6 +238,8 @@ public class Main extends Activity {
 		PendingIntent sender = PendingIntent.getBroadcast(this, NOTIFICATION_INTENT, intent, 0);
 		AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
 		alarm.cancel(sender);
+		
+		Toast.makeText(this, getString(R.string.notificationOff), Toast.LENGTH_LONG).show();
 	}
 	
 	private void checkNotificationDialog() {
@@ -273,14 +257,14 @@ public class Main extends Activity {
 
 	private void showNotificationDialog() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("You wanna get a notification every day?")
+		builder.setMessage(getString(R.string.notificationQuestion))
 		       .setCancelable(false)
-		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		       .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		        	   createNotificationAlarm();
 		           }
 		       })
-		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		       .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		        	    cancelNotificationAlarm();
 		                dialog.cancel();

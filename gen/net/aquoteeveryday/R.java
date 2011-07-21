@@ -13,8 +13,7 @@ public final class R {
     public static final class drawable {
         public static final int background=0x7f020000;
         public static final int icon=0x7f020001;
-        public static final int notification=0x7f020002;
-        public static final int share=0x7f020003;
+        public static final int share=0x7f020002;
     }
     public static final class id {
         public static final int author=0x7f060001;
@@ -29,8 +28,17 @@ public final class R {
         public static final int main=0x7f050000;
     }
     public static final class string {
-        public static final int app_name=0x7f040002;
-        public static final int notification=0x7f040001;
+        public static final int app_name=0x7f040001;
+        public static final int download=0x7f040002;
+        public static final int no=0x7f04000a;
+        public static final int noQuote=0x7f04000b;
+        public static final int notification=0x7f040003;
+        public static final int notificationOff=0x7f040005;
+        public static final int notificationOn=0x7f040004;
+        public static final int notificationQuestion=0x7f040006;
+        public static final int notificationText=0x7f040007;
+        public static final int notificationTitle=0x7f040008;
         public static final int share=0x7f040000;
+        public static final int yes=0x7f040009;
     }
 }

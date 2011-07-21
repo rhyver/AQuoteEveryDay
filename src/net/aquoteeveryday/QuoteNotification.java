@@ -19,8 +19,8 @@ public class QuoteNotification extends BroadcastReceiver{
 		
 		int icon = R.drawable.icon;
 		long now = System.currentTimeMillis();
-		String title = "A Quote Every Day";
-		String text = "New Day. New Quote :)";
+		String title = context.getString(R.string.notificationTitle);
+		String text = context.getString(R.string.notificationText);
 		
 		Intent notificationIntent = new Intent(context, Main.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);

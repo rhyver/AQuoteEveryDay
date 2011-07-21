@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="share">Share this Quote</string>
-    <string name="notification">Notification Setting</string>
     <string name="app_name">Quote</string>
+    <string name="download">Download new quotes</string>
+    <string name="notification">Notification Setting</string>
+    <string name="notificationOn">The notification is enabled</string>
+    <string name="notificationOff">The notification is disabled</string>
+    <string name="notificationQuestion">You wanna get a notification every day?</string>
+    <string name="notificationText">New Day. New Quote :)</string>
+    <string name="notificationTitle">A Quote Every Day</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="noQuote">No Quote :(</string>
 </resources>
