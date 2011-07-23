@@ -17,7 +17,7 @@ public class QuoteNotification extends BroadcastReceiver{
 		String notificationService = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(notificationService);
 		
-		int icon = R.drawable.icon;
+		int icon = R.drawable.notification;
 		long now = System.currentTimeMillis();
 		String title = context.getString(R.string.notificationTitle);
 		String text = context.getString(R.string.notificationText);

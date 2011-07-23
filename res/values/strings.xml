@@ -6,7 +6,7 @@
     <string name="notification">Notification Setting</string>
     <string name="notificationOn">The notification is enabled</string>
     <string name="notificationOff">The notification is disabled</string>
-    <string name="notificationQuestion">You wanna get a notification every day?</string>
+    <string name="notificationQuestion">Would you like to receive a daily notification?</string>
     <string name="notificationText">New Day. New Quote :)</string>
     <string name="notificationTitle">A Quote Every Day</string>
     <string name="yes">Yes</string>

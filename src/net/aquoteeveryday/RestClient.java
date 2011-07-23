@@ -50,6 +50,8 @@ public class RestClient extends Service {
 			try {
 				Date date = quoteController.getNewestDate();
 
+				quoteController.close();
+				
 				if (date == null) {
 					Log.i(Main.TAG, "No newest date is set.");
 				} else {
@@ -64,8 +66,8 @@ public class RestClient extends Service {
 				Log.e(Main.TAG, "Extention for getNewestQuotes: " + e.toString());
 			}
 			
-			quoteController.close();
-			Log.i(Main.TAG, "End of Service");
+			
+			Log.i(Main.TAG, "Finished downloading");
 		}
 		
 		return returnValue;
@@ -101,6 +103,7 @@ public class RestClient extends Service {
 	
 	private void fetchQuote(Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		QuoteController quoteController = new QuoteController(getApplicationContext());
 		
 		String getParameter;
 		
@@ -132,69 +135,65 @@ public class RestClient extends Service {
 
 				if (result.length() == 0) {
 					Log.i(Main.TAG, "The database is up to date.");
-					return;
-				} {
+				} else {
 					Log.i(Main.TAG, "Need to store some new quotes.");
-				}
-				
-				JSONObject json = new JSONObject(result);
-				JSONArray nameArray=json.names();
-				JSONArray valArray=json.toJSONArray(nameArray);
-				
-				for(int i=0;i<valArray.length();i++)
-				{
-					String quoteString = valArray.getString(i);
+					JSONObject json = new JSONObject(result);
+					JSONArray nameArray=json.names();
+					JSONArray valArray=json.toJSONArray(nameArray);
 					
-					Integer authorId = 0;
-					String authorName = "";
-					String authorWikipedia = "";
-					String text = "";
-					String language = "";
-					Date quoteDate = new Date();
-					
-					JSONObject quoteJson = new JSONObject(quoteString);
-					JSONArray quoteNameArray = quoteJson.names();
-					JSONArray quoteValArray = quoteJson.toJSONArray(quoteNameArray);
-					
-					for (int j = 0; j <quoteNameArray.length(); j++) {
-						String quoteAttribute =  quoteNameArray.getString(j).trim();
+					for(int i=0;i<valArray.length();i++)
+					{
+						String quoteString = valArray.getString(i);
 						
-						if (quoteAttribute.equals("authorId")) {
-							authorId = quoteValArray.getInt(j);
-						} else if (quoteAttribute.equals("authorName")) {
-							authorName = quoteValArray.getString(j);
-						} else if (quoteAttribute.equals("authorWikipedia")) {
-							authorWikipedia = quoteValArray.getString(j);
-						} else if (quoteAttribute.equals("text")) {
-							text = quoteValArray.getString(j);  
-						} else if (quoteAttribute.equals("language")) {
-							language = quoteValArray.getString(j);	
-						} else if (quoteAttribute.equals("date")) {
-							String dateString = quoteValArray.getString(j);
-							quoteDate = dateFormat.parse(dateString);
-						} else {
-							Log.e(Main.TAG, "Get unkown Attribute from the API >" + quoteValArray.getString(j) + "<");
+						Integer authorId = 0;
+						String authorName = "";
+						String authorWikipedia = "";
+						String text = "";
+						String language = "";
+						Date quoteDate = new Date();
+						
+						JSONObject quoteJson = new JSONObject(quoteString);
+						JSONArray quoteNameArray = quoteJson.names();
+						JSONArray quoteValArray = quoteJson.toJSONArray(quoteNameArray);
+						
+						for (int j = 0; j <quoteNameArray.length(); j++) {
+							String quoteAttribute =  quoteNameArray.getString(j).trim();
+							
+							if (quoteAttribute.equals("authorId")) {
+								authorId = quoteValArray.getInt(j);
+							} else if (quoteAttribute.equals("authorName")) {
+								authorName = quoteValArray.getString(j);
+							} else if (quoteAttribute.equals("authorWikipedia")) {
+								authorWikipedia = quoteValArray.getString(j);
+							} else if (quoteAttribute.equals("text")) {
+								text = quoteValArray.getString(j);  
+							} else if (quoteAttribute.equals("language")) {
+								language = quoteValArray.getString(j);	
+							} else if (quoteAttribute.equals("date")) {
+								String dateString = quoteValArray.getString(j);
+								quoteDate = dateFormat.parse(dateString);
+							} else {
+								Log.e(Main.TAG, "Get unkown Attribute from the API >" + quoteValArray.getString(j) + "<");
+							}
+						}
+						
+						Author author = new Author(authorId, authorName, authorWikipedia);
+						
+						Quote quote = new Quote(text, author, language, quoteDate);
+						
+						try {
+							quoteController.storeQuote(quote);
+						} catch (Exception exception) {
+							Log.e(Main.TAG, "Exeption by storing the quote: " + exception.toString());
 						}
 					}
-					
-					Author author = new Author(authorId, authorName, authorWikipedia);
-					
-					Quote quote = new Quote(text, author, language, quoteDate);
-					
-					QuoteController quoteController = new QuoteController(getApplicationContext());
-					
-					try {
-						quoteController.storeQuote(quote);
-					} catch (Exception exception) {
-						Log.e(Main.TAG, "Exeption by storing the quote an author: " + exception.toString());
-					}
-					
-					quoteController.close();
 				}
 			}
 		} catch(Exception exception) {
 			Log.e(Main.TAG, "Exeption by translate the API response: " + exception.toString());
 		}
+		
+		quoteController.close();
 	}
 	
 	public boolean checkInternet(){

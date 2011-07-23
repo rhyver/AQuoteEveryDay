@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
     android:orientation="vertical"
     android:background="@drawable/background"
     android:layout_width="fill_parent"
@@ -9,7 +10,7 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:layout_centerInParent="true"
-		> 
+		android:id="@+id/relativeLayout1"> 
 		<TextView  
 			android:id="@+id/quote"
 		    android:layout_width="wrap_content" 
@@ -29,5 +30,15 @@
 		    android:textSize="25sp"
 		    android:layout_margin="10sp"
 		    />
-	</RelativeLayout>    
+	</RelativeLayout>
+	<com.google.ads.AdView 
+			android:id="@+id/adView"
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content" 
+			android:gravity="bottom"  
+			android:layout_alignParentBottom="true" 
+			android:layout_alignParentLeft="true"
+			ads:adUnitId="a14e296377bd5a0"
+            ads:adSize="BANNER" >
+	</com.google.ads.AdView> 
 </RelativeLayout>

@@ -25,14 +25,13 @@ public class AuthorController {
         if (cursor == null) {
         	author = null;
         } else {
-        	
 	        String name = cursor.getString(cursor.getColumnIndexOrThrow(AuthorDbAdapter.KEY_NAME));
 	        String wikipedia = cursor.getString(cursor.getColumnIndexOrThrow(AuthorDbAdapter.KEY_WIKIPEDIA));
 	        
 	        author = new Author(id, name, wikipedia);
+	        
+	        cursor.close();
         }
-        
-        cursor.close();
         
 		return author;
 		
@@ -59,7 +58,8 @@ public class AuthorController {
 	        }
         } else {
         	Log.i("AQuoteEveryDay", "The author " + author.getName() + " already exist.");
-        }
+        	cursor.close();
+        } 
 	}
 	
 	public void close() {

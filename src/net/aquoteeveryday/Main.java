@@ -28,10 +28,14 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.ads.AdRequest;
+import com.google.ads.AdView;
+
 public class Main extends Activity {
 	
-	private static final String PREFS_NAME = "AQuoteEveryDay";
-	private static final String PREFS_NOTIFICATION_DIALOG = "NotificationDialog";
+	public static final String PREFS_NAME = "AQuoteEveryDay";
+	public static final String PREFS_NOTIFICATION_DIALOG = "NotificationDialog";
+	public static final String PREFS_NOTIFICATION = "Notification";
 	public static final int NOTIFICATION_INTENT = 45;
 	public static final String TAG = "AQuoteEveryDay";
 	private TextView mQuoteView;
@@ -46,7 +50,6 @@ public class Main extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("AQuoteEveryDay", "Create Main");
         
         mProgressDialog = ProgressDialog.show(this, "", getString(R.string.download), true);
         
@@ -57,7 +60,6 @@ public class Main extends Activity {
     }
     
     private void createView() {
-    	Log.i(Main.TAG, "Create View");
     	setContentView(R.layout.main);
     	
     	Typeface font = Typeface.createFromAsset(getAssets(), "DancingScript-Regular.ttf");
@@ -67,11 +69,13 @@ public class Main extends Activity {
         
         mQuoteView.setTypeface(font);
         mAuthorView.setTypeface(font);
+        
+        AdView adView = (AdView)this.findViewById(R.id.adView);
+        adView.loadAd(new AdRequest());
 	}
 
     @Override
     protected void onResume() {
-    	Log.i(Main.TAG, "onResume");
     	super.onResume();
     	
     	getQuote();
@@ -112,8 +116,6 @@ public class Main extends Activity {
     }
     
     private void getQuote() {
-    	Log.i(Main.TAG, "Get Quote");
-    	
     	Quote quote;
         Author author;
         QuoteController quoteController = new QuoteController(this);
@@ -121,8 +123,6 @@ public class Main extends Activity {
         quote = quoteController.getQuote(new Date());
         
         if (quote == null) {
-        	Log.i(Main.TAG, "Can't find a quote for date: " + new Date().toString());
-        	
         	if (mSyncFinished) {
         		setQuoteView(getString(R.string.noQuote));
         	}
@@ -141,7 +141,6 @@ public class Main extends Activity {
         }
         
         quoteController.close();
-        Log.i(Main.TAG, "Get Quote Finish");
     }
     
     private void share() {
@@ -162,7 +161,6 @@ public class Main extends Activity {
     
     private void bindRestClientService() {
     	Intent intent = new Intent(this, RestClient.class);
-    	Log.i(Main.TAG, "Bind the RestClient Service");
     	bindService(intent, mRestClientConnection, Context.BIND_AUTO_CREATE);
     }
     
@@ -170,14 +168,12 @@ public class Main extends Activity {
 		
 		public void onServiceDisconnected(ComponentName name) {
 			mBound = false;
-			Log.i(Main.TAG, "RestClient disconnected");
 		}
 		
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			RestBinder binder = (RestBinder) service;
 			mRestClient = binder.getService();
 			mBound = true;
-			Log.i(Main.TAG, "RestClient connected");
 			
 			new SyncTask().execute("");
 		}
@@ -186,7 +182,6 @@ public class Main extends Activity {
 	private class SyncTask extends AsyncTask<String, String, Boolean> {
 
 		protected Boolean doInBackground(String... parameter) {
-			Log.i(Main.TAG,"Start Sync");
 			
 			Boolean returnValue = false;
 			
@@ -205,8 +200,6 @@ public class Main extends Activity {
 		}
 
 		protected void onPostExecute(Boolean result) {
-			Log.i(Main.TAG, "Post Execute with result: " + result.toString());
-			
 			mSyncFinished = true;
 			
 			if (mProgressDialog != null) {
@@ -229,11 +222,23 @@ public class Main extends Activity {
 	}
 	
 	private void createNotificationAlarm() {
+		SharedPreferences settings = getSharedPreferences(Main.PREFS_NAME, 0); 
+		SharedPreferences.Editor editor = settings.edit();
+		
+		editor.putBoolean(PREFS_NOTIFICATION, true);
+		editor.commit();
+		
 		Intent alarmSetter = new Intent(this, AlarmSetter.class);
 		sendBroadcast(alarmSetter);
 	}
 	
 	private void cancelNotificationAlarm() {
+		SharedPreferences settings = getSharedPreferences(Main.PREFS_NAME, 0); 
+		SharedPreferences.Editor editor = settings.edit();
+		
+		editor.putBoolean(PREFS_NOTIFICATION, false);
+		editor.commit();
+		
 		Intent intent = new Intent(this, QuoteNotification.class);
 		PendingIntent sender = PendingIntent.getBroadcast(this, NOTIFICATION_INTENT, intent, 0);
 		AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
@@ -245,13 +250,9 @@ public class Main extends Activity {
 	private void checkNotificationDialog() {
 		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0); 
 		Boolean notificationDialog = settings.getBoolean(PREFS_NOTIFICATION_DIALOG, true);
-
+		
 		if (notificationDialog) {
 			showNotificationDialog();
-			
-			SharedPreferences.Editor editor = settings.edit();
-			editor.putBoolean(PREFS_NOTIFICATION_DIALOG, false);
-			editor.commit();
 		}
 	}
 
@@ -261,11 +262,14 @@ public class Main extends Activity {
 		       .setCancelable(false)
 		       .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
+		        	   setNotificationDialogPreference();
 		        	   createNotificationAlarm();
+		        	   dialog.cancel();
 		           }
 		       })
 		       .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
+		        	    setNotificationDialogPreference();
 		        	    cancelNotificationAlarm();
 		                dialog.cancel();
 		           }
@@ -273,5 +277,12 @@ public class Main extends Activity {
 		
 		AlertDialog alert = builder.create();
 		alert.show();
+	}
+	
+	private void setNotificationDialogPreference() {
+		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0); 
+		SharedPreferences.Editor editor = settings.edit();
+		editor.putBoolean(PREFS_NOTIFICATION_DIALOG, false);
+		editor.commit();
 	}
 }

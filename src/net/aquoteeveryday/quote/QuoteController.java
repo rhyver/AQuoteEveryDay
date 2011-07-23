@@ -25,73 +25,88 @@ public class QuoteController {
 	}
 	
 	public Date getNewestDate() {
-        Cursor cursor;
+		Date returnValue = null;
+		Cursor cursor;
         cursor = mDb.getNewestDate();
      
-        if (cursor == null) {
-        	return null;
+        if (cursor != null) {
+	        String updateDate = cursor.getString(cursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_DATE));
+	        
+	        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	        
+	        Date date = null;
+	        
+			try {
+				date = dateFormat.parse(updateDate);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			
+			returnValue = date;
+			
+			cursor.close();
         }
         
-        String updateDate = cursor.getString(cursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_DATE));
-        
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        
-        Date date = null;
-        
-		try {
-			date = dateFormat.parse(updateDate);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-        
-		cursor.close();
-		
-		return date;
+		return returnValue;
 	}
 	
 	public Quote getQuote(Date date) {
-        try {
+		Quote returnValue = null;
+
+		try {
         	Cursor quoteCursor;
             quoteCursor = mDb.getQuote(date);
          
+            // If there is no correct quote on the db
             if (quoteCursor == null) {
             	Log.i(Main.TAG, "Can't find the Quote on the DB.");
-            	return null;
+            } else {
+	            Log.i(Main.TAG, "Process the quote cursor");
+	            
+	            // Get the quot information from the db cursor
+	            String text = quoteCursor.getString(quoteCursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_TEXT));
+	            Integer authorId = quoteCursor.getInt(quoteCursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_AUTHORID));
+	            String language = quoteCursor.getString(quoteCursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_LANGUAGE));
+	            
+	            Author author;
+	            AuthorController authorController = new AuthorController(mContext);
+	            
+	            Log.i(Main.TAG, "Get the quthor");
+	            
+	            // create the author object
+	            author = authorController.getAuthor(authorId);
+	            
+	            authorController.close();
+	            
+	            try {
+	            	Log.i(Main.TAG, "Create the quote object");
+	            	
+	            	// create the quote object
+	                Quote quote = new Quote(text,
+	                				  		author,
+	                				  		language,
+	                				  		date);
+	                
+	                // return the quote object
+	                returnValue = quote;
+				} catch (Exception e) {
+					Log.e("AQuoteEveryDay", "Get Author: " + e.toString());
+				}
+	            
+	            quoteCursor.close();
             }
-            
-            String text = quoteCursor.getString(quoteCursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_TEXT));
-            Integer authorId = quoteCursor.getInt(quoteCursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_AUTHORID));
-            String language = quoteCursor.getString(quoteCursor.getColumnIndexOrThrow(QuoteDbAdapter.KEY_LANGUAGE));
-            
-            Author author;
-            AuthorController authorController = new AuthorController(mContext);
-            
-            author = authorController.getAuthor(authorId);
-            
-            try {
-                Quote quote = new Quote(text,
-                				  		author,
-                				  		language,
-                				  		date);
-                return quote;
-			} catch (Exception e) {
-				Log.e("AQuoteEveryDay", "Get Author: " + e.toString());
-				return null;
-			}
-            
-            
-    		
 		} catch (Exception e) {
 			Log.e("AQuoteEveryDay", "Get Quote: " + e.toString());
-			return null;
 		}
+		
+		return returnValue;
 	}
 
 	public void storeQuote(Quote quote) {
         Cursor cursor;
         
         cursor = mDb.getQuote(quote.getDate());
-        
+
         if (cursor == null) {
 
         	try {
@@ -110,6 +125,7 @@ public class QuoteController {
 	        	try {
 	        		AuthorController authorController = new AuthorController(mContext);
 	        		authorController.storeAuthor(author);
+	        		authorController.close();
 				} catch (Exception e) {
 					Log.e(Main.TAG, "Exeption by storing the author: " + e.toString());
 				}
