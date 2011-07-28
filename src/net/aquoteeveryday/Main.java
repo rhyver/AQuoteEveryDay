@@ -51,11 +51,16 @@ public class Main extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        // Create the download progessbar
         mProgressDialog = ProgressDialog.show(this, "", getString(R.string.download), true);
         
+        // Bind the Rest Client
         bindRestClientService();
+        
+        // Create the View
 		createView();
 
+		// Check and create the notification dialog if needed
 		checkNotificationDialog();
     }
     
@@ -69,7 +74,7 @@ public class Main extends Activity {
         
         mQuoteView.setTypeface(font);
         mAuthorView.setTypeface(font);
-        
+		 
         AdView adView = (AdView)this.findViewById(R.id.adView);
         adView.loadAd(new AdRequest());
 	}
